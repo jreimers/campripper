@@ -5,25 +5,27 @@ import os
 import wget
 import sys
 
+# Retrieves Artist, Album Title and Track/Download URL listing
 def get_metadata(album_url):
 	response = urllib2.urlopen(album_url) 
 	html = response.read();
 
-	album_title = re.search(r'album_title : "(.+)"', html).group(1)
-	artist = re.search(r'artist : "(.+)",', html).group(1)
-	track_info = re.search(r'trackinfo : (.+),', html).group(1)
+	album_title = re.search(r'album_title : "(.+)"', html).group(1) # extract title
+	artist = re.search(r'artist : "(.+)",', html).group(1) # extract artist
+	track_info = re.search(r'trackinfo : (.+),', html).group(1) # extract trackinfo json object
 
 	tracks = json.loads(track_info)
 
 	queue = {}
 
-	for track in tracks:
+	for track in tracks: # populate queue from json object
 		title = track['title']
 		url = track['file']['mp3-128']
 		queue[title] = url
 
 	return(artist, album_title, queue)
 
+# Uses python wget to download the queue to a specified output directory
 def get_tracks(queue, output_path):
 	for title,url in queue.items():
 		path = os.path.join(output_path, title + ".mp3")
